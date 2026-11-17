@@ -1,0 +1,19 @@
+CREATE TABLE productEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    price REAL NOT NULL,
+    imageUrl TEXT
+);
+
+selectAll:
+SELECT * FROM productEntity;
+
+selectById:
+SELECT * FROM productEntity WHERE id = ?;
+
+insertProduct:
+INSERT OR REPLACE INTO productEntity(id, name, price, imageUrl)
+VALUES (?, ?, ?, ?);
+
+deleteAll:
+DELETE FROM productEntity;
