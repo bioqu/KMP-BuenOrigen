@@ -7,8 +7,8 @@ import cl.uchile.dcc.mobile.buenorigen.data.model.Product
 interface CartRepository {
     suspend fun getCart(customerId: String): Result<Cart>
     suspend fun addToCart(customerId: String, product: Product, quantity: Int): Result<Cart>
-    suspend fun updateQuantity(customerId: String, productId: String, quantity: Int): Result<Cart>
-    suspend fun removeFromCart(customerId: String, productId: String): Result<Cart>
+    suspend fun updateQuantity(customerId: String, productId: Long, quantity: Int): Result<Cart>
+    suspend fun removeFromCart(customerId: String, productId: Long): Result<Cart>
     suspend fun clearCart(customerId: String): Result<Cart>
 }
 
@@ -47,7 +47,7 @@ class CartRepositoryImpl : CartRepository {
         return Result.success(updatedCart)
     }
 
-    override suspend fun updateQuantity(customerId: String, productId: String, quantity: Int): Result<Cart> {
+    override suspend fun updateQuantity(customerId: String, productId: Long, quantity: Int): Result<Cart> {
         val currentCart = carts[customerId] ?: return Result.failure(Exception("Carrito no encontrado"))
         if (quantity <= 0) {
             return removeFromCart(customerId, productId)
@@ -67,7 +67,7 @@ class CartRepositoryImpl : CartRepository {
         return Result.success(updatedCart)
     }
 
-    override suspend fun removeFromCart(customerId: String, productId: String): Result<Cart> {
+    override suspend fun removeFromCart(customerId: String, productId: Long): Result<Cart> {
         val currentCart = carts[customerId] ?: return Result.failure(Exception("Carrito no encontrado"))
         val updatedItems = currentCart.items.filter { it.productId != productId }
         val updatedCart = currentCart.copy(items = updatedItems)

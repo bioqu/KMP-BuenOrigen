@@ -1,5 +1,6 @@
 package cl.uchile.dcc.mobile.buenorigen.data.model
 
+import cl.uchile.dcc.mobile.buenorigen.data.publicFileContentUrl
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -13,26 +14,40 @@ data class SustainableAttributes(
     val isCompostableCertified: Boolean = false
 )
 
+/**
+ * Producto público de la API.
+ * El listado (`GET /products`) trae el resumen. El detalle agrega descripción e imágenes.
+ */
 @Serializable
 data class Product(
-    val id: String,
-    val producerId: String,
-    val categoryId: String,
+    val id: Long,
     val name: String,
-    val description: String,
+    val producerId: Long,
+    val producerName: String = "",
+    val categoryId: Long,
     val price: Double,
-    val stock: Int,
-    val images: List<String>,
-    val co2EvitadoKg: Double, // kg de CO2 evitado por unidad
-    val greenPoints: Int, // Calculado según CO2 evitado o precio según regla (100 pesos = 1 punto, o 100 puntos por kg CO2e)
-    val isActive: Boolean = true,
-    val isOnSale: Boolean = false,
-    val discountPrice: Double? = null,
-    val sustainableAttributes: SustainableAttributes = SustainableAttributes(),
-    // Atributos diferenciadores opcionales
-    val size: String? = null,
-    val weightKg: Double? = null,
-    val dimensions: String? = null,
-    val color: String? = null,
-    val material: String? = null
-)
+    val offerPrice: Double? = null,
+    val finalPrice: Double = 0.0,
+    val discountPercentage: Int = 0,
+    val stock: Int = 0,
+    val available: Boolean = true,
+    val co2Avoided: Double = 0.0,
+    val greenPoints: Int = 0,
+    val rating: Double? = null,
+    val reviewCount: Int = 0,
+    val primaryImageFileId: String? = null,
+    val description: String = "",
+    val categoryName: String? = null,
+    val imageFileIds: List<String> = emptyList()
+) {
+    val isActive: Boolean get() = available
+    val isOnSale: Boolean get() = offerPrice != null
+    val discountPrice: Double? get() = offerPrice
+    val co2EvitadoKg: Double get() = co2Avoided
+    val images: List<String>
+        get() {
+            val gallery = imageFileIds.mapNotNull { publicFileContentUrl(it) }
+            if (gallery.isNotEmpty()) return gallery
+            return listOfNotNull(publicFileContentUrl(primaryImageFileId))
+        }
+}

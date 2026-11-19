@@ -1,16 +1,18 @@
 package cl.uchile.dcc.mobile.buenorigen.data.repository
 
 import cl.uchile.dcc.mobile.buenorigen.data.httpClient
+import cl.uchile.dcc.mobile.buenorigen.data.model.PageResponse
 import cl.uchile.dcc.mobile.buenorigen.data.model.Product
 import cl.uchile.dcc.mobile.buenorigen.data.model.SustainableAttributes
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
+import io.ktor.client.request.parameter
 
 interface ProductRepository {
     suspend fun getProducts(
         query: String? = null,
-        categoryId: String? = null,
+        categoryId: Long? = null,
         minPrice: Double? = null,
         maxPrice: Double? = null,
         onlyAvailable: Boolean = false,
@@ -28,58 +30,10 @@ interface ProductRepository {
 class ProductRepositoryImpl(
     private val client: HttpClient = httpClient
 ) : ProductRepository {
-    private val mockProducts = mutableListOf(
-        Product(
-            id = "prod-1",
-            producerId = "p1",
-            categoryId = "cat-1",
-            name = "Miel Orgánica Multifloral 500g",
-            description = "Miel pura de abejas nativas recolectada en bosques de la Araucanía.",
-            price = 6500.0,
-            stock = 15,
-            images = listOf("url_miel_1"),
-            co2EvitadoKg = 1.2,
-            greenPoints = 120,
-            isActive = true,
-            sustainableAttributes = SustainableAttributes(isOrganicCertified = true, isPlasticFree = true)
-        ),
-        Product(
-            id = "prod-2",
-            producerId = "p2",
-            categoryId = "cat-2",
-            name = "Polera de Algodón Orgánico Talla M",
-            description = "Polera 100% algodón orgánico, teñida con tintes naturales.",
-            price = 18990.0,
-            stock = 8,
-            images = listOf("url_polera_1"),
-            co2EvitadoKg = 3.5,
-            greenPoints = 350,
-            isActive = true,
-            isOnSale = true,
-            discountPrice = 15000.0,
-            sustainableAttributes = SustainableAttributes(isVegan = true, isOrganicCertified = true),
-            size = "M",
-            color = "Verde Olivo"
-        ),
-        Product(
-            id = "prod-3",
-            producerId = "p3",
-            categoryId = "cat-3",
-            name = "Jabón Sólido de Caléndula",
-            description = "Jabón artesanal hidratante, sin envase plástico.",
-            price = 4500.0,
-            stock = 0, // Sin stock
-            images = listOf("url_jabon_1"),
-            co2EvitadoKg = 0.8,
-            greenPoints = 80,
-            isActive = true,
-            sustainableAttributes = SustainableAttributes(isCrueltyFree = true, isPlasticFree = true, isVegan = true)
-        )
-    )
 
     override suspend fun getProducts(
         query: String?,
-        categoryId: String?,
+        categoryId: Long?,
         minPrice: Double?,
         maxPrice: Double?,
         onlyAvailable: Boolean,
@@ -88,31 +42,34 @@ class ProductRepositoryImpl(
         sortBy: String?
     ): Result<List<Product>> {
         return try {
-            val response: List<Product> = client.get("products").body()
-            Result.success(response)
-        } catch (_: Exception) {
-            var filtered = mockProducts.filter { it.isActive }
-
-            if (!query.isNullOrBlank()) {
-                filtered = filtered.filter { it.name.contains(query, ignoreCase = true) || it.description.contains(query, ignoreCase = true) }
-            }
-            if (!categoryId.isNullOrBlank()) {
-                filtered = filtered.filter { it.categoryId == categoryId }
-            }
-            if (minPrice != null) {
-                filtered = filtered.filter { (it.discountPrice ?: it.price) >= minPrice }
-            }
-            if (maxPrice != null) {
-                filtered = filtered.filter { (it.discountPrice ?: it.price) <= maxPrice }
-            }
-            if (onlyAvailable) {
-                filtered = filtered.filter { it.stock > 0 }
-            }
-            if (onlyOnSale) {
-                filtered = filtered.filter { it.isOnSale }
-            }
-
-            Result.success(filtered)
+            val page: PageResponse<Product> = client.get("products") {
+                parameter("page", 0)
+                parameter("size", 100)
+                if (!query.isNullOrBlank()) parameter("search", query)
+                if (categoryId != null) parameter("categoryId", categoryId)
+                if (minPrice != null) parameter("minPrice", minPrice)
+                if (maxPrice != null) parameter("maxPrice", maxPrice)
+                if (onlyAvailable) parameter("available", true)
+                if (onlyOnSale) parameter("onSale", true)
+                when (sortBy) {
+                    "price_asc" -> {
+                        parameter("sortBy", "finalPrice")
+                        parameter("sortDirection", "ASC")
+                    }
+                    "price_desc" -> {
+                        parameter("sortBy", "finalPrice")
+                        parameter("sortDirection", "DESC")
+                    }
+                    "name" -> {
+                        parameter("sortBy", "name")
+                        parameter("sortDirection", "ASC")
+                    }
+                }
+            }.body()
+            Result.success(page.content)
+        } catch (e: Exception) {
+            println("ERROR API products: ${e.message}")
+            Result.failure(e)
         }
     }
 
@@ -120,42 +77,30 @@ class ProductRepositoryImpl(
         return try {
             val response: Product = client.get("products/$id").body()
             Result.success(response)
-        } catch (_: Exception) {
-            val product = mockProducts.find { it.id == id }
-            if (product != null) Result.success(product) else Result.failure(Exception("Producto no encontrado"))
+        } catch (e: Exception) {
+            println("ERROR API product $id: ${e.message}")
+            Result.failure(e)
         }
     }
 
     override suspend fun getProductsByProducer(producerId: String): Result<List<Product>> {
         return try {
-            val response: List<Product> = client.get("producers/$producerId/products").body()
-            Result.success(response)
-        } catch (_: Exception) {
-            Result.success(mockProducts.filter { it.producerId == producerId })
+            val page: PageResponse<Product> = client.get("producers/$producerId/products") {
+                parameter("page", 0)
+                parameter("size", 100)
+            }.body()
+            Result.success(page.content)
+        } catch (e: Exception) {
+            println("ERROR API producer products $producerId: ${e.message}")
+            Result.failure(e)
         }
     }
 
     override suspend fun createProduct(product: Product): Result<Product> {
-        return try {
-            val response: Product = client.get("products").body() // placeholder or post
-            Result.success(response)
-        } catch (_: Exception) {
-            mockProducts.add(product)
-            Result.success(product)
-        }
+        return Result.failure(UnsupportedOperationException("Crear producto todavía no está conectado a la API"))
     }
 
     override suspend fun updateProduct(product: Product): Result<Product> {
-        return try {
-            Result.success(product)
-        } catch (_: Exception) {
-            val index = mockProducts.indexOfFirst { it.id == product.id }
-            if (index != -1) {
-                mockProducts[index] = product
-                Result.success(product)
-            } else {
-                Result.failure(Exception("Producto no encontrado para actualizar"))
-            }
-        }
+        return Result.failure(UnsupportedOperationException("Actualizar producto todavía no está conectado a la API"))
     }
 }

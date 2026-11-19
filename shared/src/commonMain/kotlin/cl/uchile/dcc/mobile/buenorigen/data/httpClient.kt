@@ -2,23 +2,35 @@ package cl.uchile.dcc.mobile.buenorigen.data
 
 import cl.uchile.dcc.mobile.buenorigen.ui.apiBaseUrl
 import io.ktor.client.HttpClient
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 
 val httpClient = HttpClient {
-    // URL base de tu API proporcionada por el usuario
+    expectSuccess = true
+
     defaultRequest {
         url(apiBaseUrl)
     }
 
-    // Configuración para convertir JSON automáticamente con kotlinx.serialization
+    install(HttpTimeout) {
+        connectTimeoutMillis = 15_000
+        requestTimeoutMillis = 20_000
+    }
+
     install(ContentNegotiation) {
         json(Json {
-            ignoreUnknownKeys = true // Evita errores si la API devuelve campos nuevos
+            ignoreUnknownKeys = true
             isLenient = true
-            prettyPrint = true
+            coerceInputValues = true
+            explicitNulls = false
         })
     }
+}
+
+fun publicFileContentUrl(fileId: String?): String? {
+    if (fileId.isNullOrBlank()) return null
+    return apiBaseUrl.trimEnd('/') + "/files/$fileId/content"
 }

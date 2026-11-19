@@ -56,7 +56,8 @@ fun ProducerAvatar(
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
-            text = producer.description,
+            text = producer.location?.takeIf { it.isNotBlank() }
+                ?: producer.description.orEmpty(),
             style = MaterialTheme.typography.bodySmall,
             color = textColor.copy(alpha = 0.8f),
             textAlign = TextAlign.Center,

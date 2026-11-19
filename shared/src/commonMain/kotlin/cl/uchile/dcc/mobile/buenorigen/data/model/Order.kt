@@ -10,7 +10,7 @@ enum class OrderStatus {
 @Serializable
 data class OrderDetail(
     val id: String,
-    val productId: String,
+    val productId: Long,
     val productName: String,
     val unitPrice: Double,
     val quantity: Int,

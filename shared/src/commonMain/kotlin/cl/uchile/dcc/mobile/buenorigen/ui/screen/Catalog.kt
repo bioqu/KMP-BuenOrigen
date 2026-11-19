@@ -80,16 +80,27 @@ fun Catalog(navController: NavController) {
                                     )
                                     Spacer(modifier = Modifier.height(4.dp))
                                     Text(
-                                        text = "$${product.price}",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.primary
+                                        text = product.producerName,
+                                        style = MaterialTheme.typography.bodySmall
                                     )
                                     Spacer(modifier = Modifier.height(4.dp))
                                     Text(
-                                        text = product.description,
-                                        style = MaterialTheme.typography.bodySmall,
-                                        maxLines = 2
+                                        text = if (product.isOnSale) {
+                                            "$${product.finalPrice.toLong()}  (antes $${product.price.toLong()})"
+                                        } else {
+                                            "$${product.finalPrice.toLong()}"
+                                        },
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.primary
                                     )
+                                    if (product.description.isNotBlank()) {
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Text(
+                                            text = product.description,
+                                            style = MaterialTheme.typography.bodySmall,
+                                            maxLines = 2
+                                        )
+                                    }
                                 }
                             }
                         }

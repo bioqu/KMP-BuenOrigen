@@ -11,7 +11,7 @@ class AndroidPlatform : Platform {
 
 actual fun getPlatform(): Platform = AndroidPlatform()
 
-actual val apiBaseUrl: String = "http://159.112.150.143:3003/"
+actual val apiBaseUrl: String = "http://159.112.150.143:3004/"
 
 @Composable
 actual fun PlatformVerticalScrollbar(

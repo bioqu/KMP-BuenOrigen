@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class CartItem(
     val id: String,
-    val productId: String,
+    val productId: Long,
     val product: Product,
     val quantity: Int, // Max 3 units per product
     val unitPrice: Double

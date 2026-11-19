@@ -12,7 +12,7 @@ class JVMPlatform : Platform {
 
 actual fun getPlatform(): Platform = JVMPlatform()
 
-actual val apiBaseUrl: String = System.getenv("API_BASE_URL") ?: "http://159.112.150.143:3003/"
+actual val apiBaseUrl: String = System.getenv("API_BASE_URL") ?: "http://159.112.150.143:3004/"
 
 @Composable
 actual fun PlatformVerticalScrollbar(
