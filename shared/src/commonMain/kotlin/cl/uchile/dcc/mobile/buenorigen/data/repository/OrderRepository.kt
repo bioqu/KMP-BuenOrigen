@@ -15,7 +15,9 @@ interface OrderRepository {
 class OrderRepositoryImpl(
     private val cartRepository: CartRepository
 ) : OrderRepository {
-    private val orders = mutableMapOf<String, Order>()
+    companion object {
+        private val orders = mutableMapOf<String, Order>()
+    }
 
     override suspend fun confirmOrder(customerId: String, address: Address, pointsToUse: Int): Result<Order> {
         val cartResult = cartRepository.getCart(customerId)

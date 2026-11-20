@@ -18,3 +18,15 @@ expect fun PlatformVerticalScrollbar(
     listState: LazyListState,
     modifier: Modifier = Modifier
 )
+
+@Composable
+expect fun PlatformVerticalScrollbar(
+    gridState: androidx.compose.foundation.lazy.grid.LazyGridState,
+    modifier: Modifier = Modifier
+)
+
+@Composable
+expect fun PlatformVerticalScrollbar(
+    scrollState: androidx.compose.foundation.ScrollState,
+    modifier: Modifier = Modifier
+)

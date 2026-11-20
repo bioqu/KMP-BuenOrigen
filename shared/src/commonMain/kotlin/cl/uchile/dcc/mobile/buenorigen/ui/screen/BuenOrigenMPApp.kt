@@ -104,6 +104,14 @@ fun BuenOrigenMPApp(
                 composable(ScreenRoutes.Catalog.route) {
                     Catalog(navController = navController)
                 }
+                composable(ScreenRoutes.ProductDetail.route) { backStackEntry ->
+                    val productId = backStackEntry.savedStateHandle.get<String>("productId") ?: ""
+                    ProductDetailScreen(navController = navController, productId = productId)
+                }
+                composable(ScreenRoutes.OrderSuccess.route) { backStackEntry ->
+                    val orderId = backStackEntry.savedStateHandle.get<String>("orderId") ?: ""
+                    OrderSuccessScreen(navController = navController, orderId = orderId)
+                }
             }
         }
     }

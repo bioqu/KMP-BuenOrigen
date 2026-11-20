@@ -13,8 +13,10 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
+import cl.uchile.dcc.mobile.buenorigen.data.model.Address
 import cl.uchile.dcc.mobile.buenorigen.data.model.Cart
 import cl.uchile.dcc.mobile.buenorigen.data.repository.CartRepositoryImpl
+import cl.uchile.dcc.mobile.buenorigen.data.repository.OrderRepositoryImpl
 import kotlinx.coroutines.launch
 
 @Composable
@@ -181,18 +183,28 @@ fun CartScreen(navController: NavController) {
                             Button(
                                 onClick = {
                                     scope.launch {
-                                        cartRepository.clearCart(customerId).fold(
-                                            onSuccess = {
-                                                cart = it
-                                                successMessage = "¡Pedido confirmado con éxito! 🌱 Gracias por comprar sostenible."
+                                        val orderRepository = OrderRepositoryImpl(cartRepository)
+                                        val address = Address(
+                                            id = "addr-1",
+                                            street = "Av. Providencia",
+                                            number = "123",
+                                            comuna = "Providencia",
+                                            city = "Santiago",
+                                            region = "Metropolitana"
+                                        )
+                                        orderRepository.confirmOrder(customerId, address, 0).fold(
+                                            onSuccess = { order ->
+                                                navController.navigate(ScreenRoutes.OrderSuccess.createRoute(order.id))
                                             },
-                                            onFailure = { errorMessage = it.message }
+                                            onFailure = { err ->
+                                                errorMessage = err.message ?: "Error al confirmar pedido"
+                                            }
                                         )
                                     }
                                 },
                                 modifier = Modifier.fillMaxWidth()
                             ) {
-                                Text(text = "Confirmar Compra (Checkout)")
+                                Text(text = "Confirmar Compra")
                             }
                         }
                     }

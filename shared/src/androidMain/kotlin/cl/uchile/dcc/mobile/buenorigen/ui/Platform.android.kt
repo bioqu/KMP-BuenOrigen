@@ -19,3 +19,17 @@ actual fun PlatformVerticalScrollbar(
     modifier: Modifier
 ) {
 }
+
+@Composable
+actual fun PlatformVerticalScrollbar(
+    gridState: androidx.compose.foundation.lazy.grid.LazyGridState,
+    modifier: Modifier
+) {
+}
+
+@Composable
+actual fun PlatformVerticalScrollbar(
+    scrollState: androidx.compose.foundation.ScrollState,
+    modifier: Modifier
+) {
+}

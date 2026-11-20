@@ -13,7 +13,9 @@ interface CartRepository {
 }
 
 class CartRepositoryImpl : CartRepository {
-    private val carts = mutableMapOf<String, Cart>()
+    companion object {
+        private val carts = mutableMapOf<String, Cart>()
+    }
 
     override suspend fun getCart(customerId: String): Result<Cart> {
         val cart = carts.getOrPut(customerId) { Cart(id = "cart-$customerId", customerId = customerId, items = emptyList()) }
